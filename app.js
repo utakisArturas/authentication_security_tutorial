@@ -29,7 +29,6 @@ db.once("open",()=>{
 
 
 app.listen(port,()=>{
-    console.log(process.env.SECRET);
     console.log(`Server running on port : ${port}`);
 });
 

@@ -6,7 +6,9 @@ const bodyParser = require('body-parser');
 const User = require("./models/user");
 app.use(express.static("public"));
 app.set('view engine', 'ejs');
-const md5 = require('md5');
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
+
 
 app.use(bodyParser.urlencoded({
     extended:true
@@ -27,7 +29,7 @@ app.route("/login")
 })
 .post(async (request,response)=>{
     const username = request.body.username;
-    const password = md5(request.body.password);
+    const password = request.body.password;
     const foundUser = await User.findOne({email:username})
     try {
         if(username !== foundUser.email && password !== foundUser.password){
@@ -49,16 +51,20 @@ app.route("/register")
     response.render("register")
 })
 .post(async (request,response)=>{
-    const user = new User({
-        email: request.body.username,
-        password: md5(request.body.password)
+    await bcrypt.genSalt(saltRounds, (err, salt)=> {
+         bcrypt.hash(request.body.password, salt, function(err, hash) {
+            const user = new User({
+                email: request.body.username,
+                password: hash
+            })
+            try {
+                user.save();
+                response.render("secrets")
+            } catch (error) {
+                console.log(error);
+            }
+        });
     });
-    try {
-        await user.save();
-        response.render("secrets")
-    } catch (error) {
-        console.log(error);
-    }
 })
 .put()
 .patch()
