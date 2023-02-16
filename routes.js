@@ -27,20 +27,22 @@ app.route("/login")
 .get((request,response)=>{
     response.render("login")
 })
-.post(async (request,response)=>{
+.post( (request,response)=>{
     const username = request.body.username;
     const password = request.body.password;
-    const foundUser = await User.findOne({email:username})
-    try {
-        if(username !== foundUser.email && password !== foundUser.password){
-            response.send(alert("Wrong username or password!"))
+    User.findOne({email:username},function(err,foundUser){
+        if(err){
+            console.log(err);
+        } else{
+            if(foundUser){
+                bcrypt.compare(password,foundUser.password,function(err,result){
+                    if(result===true){
+                       response.render("secrets") 
+                    }
+                })
+            }
         }
-        else{
-            response.render("secrets")
-        }
-    } catch (error) {
-        console.log(error);
-    }
+    })
 })
 .put()
 .patch()
