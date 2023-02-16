@@ -6,6 +6,7 @@ const bodyParser = require('body-parser');
 const User = require("./models/user");
 app.use(express.static("public"));
 app.set('view engine', 'ejs');
+const md5 = require('md5');
 
 app.use(bodyParser.urlencoded({
     extended:true
@@ -26,7 +27,7 @@ app.route("/login")
 })
 .post(async (request,response)=>{
     const username = request.body.username;
-    const password = request.body.password;
+    const password = md5(request.body.password);
     const foundUser = await User.findOne({email:username})
     try {
         if(username !== foundUser.email && password !== foundUser.password){
@@ -50,7 +51,7 @@ app.route("/register")
 .post(async (request,response)=>{
     const user = new User({
         email: request.body.username,
-        password: request.body.password
+        password: md5(request.body.password)
     });
     try {
         await user.save();
